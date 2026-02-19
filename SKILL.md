@@ -145,7 +145,7 @@ ENV_FILE="$HOME/.claude/skills/video-to-subtitle-summary/.env" && if [ -f "$ENV_
 ```bash
 ENV_FILE="$HOME/.claude/skills/video-to-subtitle-summary/.env" && if [ -f "$ENV_FILE" ]; then BYTEDANCE_VC_TOKEN=$(grep "BYTEDANCE_VC_TOKEN" "$ENV_FILE" | cut -d'=' -f2 | tr -d '"' | tr -d "'"); BYTEDANCE_VC_APPID=$(grep "BYTEDANCE_VC_APPID" "$ENV_FILE" | cut -d'=' -f2 | tr -d '"' | tr -d "'"); else BYTEDANCE_VC_TOKEN=$(grep "BYTEDANCE_VC_TOKEN" ~/.zshrc ~/.bashrc 2>/dev/null | head -1 | cut -d'"' -f2); BYTEDANCE_VC_APPID=$(grep "BYTEDANCE_VC_APPID" ~/.zshrc ~/.bashrc 2>/dev/null | head -1 | cut -d'"' -f2); fi && curl -s "https://openspeech.bytedance.com/api/v1/vc/query?appid=$BYTEDANCE_VC_APPID&id={TASK_ID}" -H "Authorization: Bearer;$BYTEDANCE_VC_TOKEN"
 
-# code=0 成功，code=1000 处理中（等待5秒后重试）
+# code=0 成功，code=2000 处理中（等待5秒后重试）
 ```
 
 ### 步骤6: 处理字幕
