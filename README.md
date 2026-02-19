@@ -67,7 +67,7 @@ choco install ffmpeg
 
 ```bash
 # 克隆仓库
-git clone https://github.com/ultrasev/video-to-subtitle-summary.git
+git clone https://github.com/imlewc/video-to-subtitle-summary.git
 
 # 复制到 Claude Code skills 目录
 cp -r video-to-subtitle-summary ~/.claude/skills/video-to-subtitle-summary
