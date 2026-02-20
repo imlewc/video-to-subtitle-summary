@@ -1,14 +1,16 @@
 # video-to-subtitle-summary
 
-A Claude Code Skill that automatically converts Douyin (TikTok China) videos into subtitle text and generates AI summaries.
+A Claude Code Skill that automatically converts Douyin (TikTok China) videos or local video/audio files into subtitle text and generates AI summaries.
 
-**Core Flow:** Provide a Douyin link → Auto-download video → Extract audio → Speech recognition → Generate subtitles → AI summary
+**Core Flow:**
+- **Online video:** Provide a Douyin link → Auto-download video → Extract audio → Speech recognition → Generate subtitles → AI summary
+- **Local file:** Provide a local video/audio path → Extract audio (if needed) → Speech recognition → Generate subtitles → AI summary
 
 [中文文档](./README.md)
 
 ## Demo
 
-Give it a Douyin video link, and it automatically outputs:
+Give it a Douyin video link or a local file path, and it automatically outputs:
 
 ```markdown
 ## Video Analysis Result
@@ -46,7 +48,7 @@ and how individuals can seize opportunities in the AI era...
 |-----------|-------------|
 | [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | Anthropic's official CLI tool |
 | [FFmpeg](https://ffmpeg.org/) | Audio/video processing tool |
-| [TikHub](https://tikhub.io/) account | Fetch Douyin video info and download URLs |
+| [TikHub](https://tikhub.io/) account | Fetch Douyin video info and download URLs (online video only) |
 | [Volcengine](https://www.volcengine.com/) account | ByteDance speech recognition service |
 
 ## Quick Start
@@ -96,6 +98,8 @@ export BYTEDANCE_VC_APPID="your_bytedance_vc_appid"
 
 ## Usage
 
+### Online Video
+
 Simply send a Douyin link in Claude Code:
 
 ```
@@ -107,6 +111,20 @@ Or use the skill command:
 ```
 /video-to-subtitle-summary https://v.douyin.com/xxxxxx/
 ```
+
+### Local File
+
+Provide a local video or audio file path:
+
+```
+Please extract subtitles and summarize: /Users/me/Downloads/video.mp4
+```
+
+```
+/video-to-subtitle-summary ~/Desktop/recording.mp3
+```
+
+> Local file mode automatically skips the video download steps. Audio files also skip audio extraction. No TikHub API needed.
 
 ## API Setup Guides
 
