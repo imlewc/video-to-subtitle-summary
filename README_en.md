@@ -1,6 +1,6 @@
 # video-to-subtitle-summary
 
-A Claude Code Skill that automatically converts short video platform (Douyin, Xiaohongshu, etc.) videos or local video/audio files into subtitle text and generates AI summaries.
+A Claude Code Skill that automatically converts short video platform (Douyin, Xiaohongshu, Bilibili, etc.) videos or local video/audio files into subtitle text and generates AI summaries.
 
 **Core Flow:**
 - **Online video:** Provide a video link → Auto-download video → Extract audio → Speech recognition → Generate subtitles → AI summary
@@ -48,6 +48,7 @@ and how individuals can seize opportunities in the AI era...
 |-----------|-------------|
 | [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | Anthropic's official CLI tool |
 | [FFmpeg](https://ffmpeg.org/) | Audio/video processing tool |
+| [yt-dlp](https://github.com/yt-dlp/yt-dlp) | Video download tool (Bilibili only) |
 | [TikHub](https://tikhub.io/) account | Fetch short video platform info and download URLs (online video only) |
 | [Volcengine](https://www.volcengine.com/) account | ByteDance speech recognition service |
 
@@ -64,6 +65,16 @@ sudo apt install ffmpeg
 
 # Windows (using Chocolatey)
 choco install ffmpeg
+```
+
+### 1.5 Install yt-dlp (Bilibili only)
+
+```bash
+# macOS
+brew install yt-dlp
+
+# Universal (requires Python)
+pip install yt-dlp
 ```
 
 ### 2. Copy the Skill to Claude Code
@@ -100,7 +111,7 @@ export BYTEDANCE_VC_APPID="your_bytedance_vc_appid"
 
 ### Online Video
 
-Simply send a video link in Claude Code (supports Douyin, Xiaohongshu, etc.):
+Simply send a video link in Claude Code (supports Douyin, Xiaohongshu, Bilibili, etc.):
 
 ```
 Please extract subtitles and summarize this video: https://v.douyin.com/xxxxxx/
@@ -108,6 +119,10 @@ Please extract subtitles and summarize this video: https://v.douyin.com/xxxxxx/
 
 ```
 Please summarize this Xiaohongshu video: https://www.xiaohongshu.com/explore/xxxxxx
+```
+
+```
+Please summarize this Bilibili video: https://www.bilibili.com/video/BVxxxxxxxxxx/
 ```
 
 Or use the skill command:

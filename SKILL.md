@@ -1,14 +1,14 @@
 ---
 name: video-to-subtitle-summary
-description: Use when user provides a short video platform URL (Douyin, Xiaohongshu, etc.) or a local video/audio file path and wants to extract subtitles and generate AI summary. Triggers on URLs like v.douyin.com, xhslink.com, xiaohongshu.com, share links, or local file paths ending in .mp4/.mp3/.wav etc.
-args: <video_url_or_file_path> - 视频链接（抖音/小红书等）或本地视频/音频文件路径（必需）
+description: Use when user provides a short video platform URL (Douyin, Xiaohongshu, Bilibili, etc.) or a local video/audio file path and wants to extract subtitles and generate AI summary. Triggers on URLs like v.douyin.com, xhslink.com, xiaohongshu.com, bilibili.com, b23.tv, share links, or local file paths ending in .mp4/.mp3/.wav etc.
+args: <video_url_or_file_path> - 视频链接（抖音/小红书/B站等）或本地视频/音频文件路径（必需）
 ---
 
 # 视频转字幕与AI总结技能
 
 ## Overview
 
-将短视频平台（抖音、小红书等）视频或本地视频/音频文件转换为字幕文本并生成AI摘要。
+将短视频平台（抖音、小红书、B站等）视频或本地视频/音频文件转换为字幕文本并生成AI摘要。
 
 **核心流程：**
 - **在线视频：** 获取视频信息 → 下载视频 → 提取音频 → 语音识别 → 生成字幕 → AI总结
@@ -16,7 +16,7 @@ args: <video_url_or_file_path> - 视频链接（抖音/小红书等）或本地�
 
 ## When to Use
 
-- 用户提供短视频平台链接（抖音、小红书等），要求提取字幕或生成总结
+- 用户提供短视频平台链接（抖音、小红书、B站等），要求提取字幕或生成总结
 - 用户提供本地视频/音频文件路径，要求转字幕或生成总结
 - 需要将视频内容转为文字
 
@@ -26,9 +26,10 @@ args: <video_url_or_file_path> - 视频链接（抖音/小红书等）或本地�
 
 | 服务                | 用途                   | 必需                           |
 | ------------------- | ---------------------- | ------------------------------ |
-| **TikHub API**      | 获取短视频平台视频信息和下载地址（抖音、小红书等） | 仅在线视频模式需要             |
+| **TikHub API**      | 获取短视频平台视频信息和下载地址（抖音、小红书、B站等） | 仅在线视频模式需要             |
 | **字节跳动 VC API** | 语音转文字             | ✅                              |
 | **FFmpeg**          | 提取音频（本地工具）   | ✅（音频文件可跳过）            |
+| **yt-dlp**          | 下载B站视频（本地工具） | 仅B站视频需要                  |
 
 ## API 凭证（环境变量）
 
@@ -60,7 +61,10 @@ export BYTEDANCE_VC_APPID="your_appid"
 
 根据用户输入判断处理模式：
 
-- **在线视频模式**：输入为 URL（包含 `http`/`https`、`douyin.com`、`v.douyin.com`、`xhslink.com`、`xiaohongshu.com` 等）→ 从步骤1开始，完整执行
+- **在线视频模式**：输入为 URL → 根据域名识别平台，从步骤1开始完整执行
+  - **抖音/TikTok**：`douyin.com`、`v.douyin.com`、`tiktok.com` 等
+  - **小红书**：`xiaohongshu.com`、`xhslink.com` 等
+  - **B站**：`bilibili.com`、`b23.tv` 等
 - **本地文件模式**：输入为本地文件路径（如 `/path/to/video.mp4`、`~/Downloads/audio.mp3`）→ **跳过步骤1和步骤2**，根据文件类型决定：
   - 本地**视频**文件（`.mp4`、`.mov`、`.avi`、`.mkv` 等）→ 从步骤3（提取音频）开始
   - 本地**音频**文件（`.mp3`、`.wav`、`.m4a`、`.flac` 等）→ **跳过步骤3**，直接从步骤4（语音识别）开始
@@ -119,26 +123,96 @@ fi
 
 ### 步骤1: 获取视频信息（仅在线视频模式）
 
+根据 URL 域名识别平台，调用对应的 TikHub API 端点：
+
+| 平台 | URL 特征 | API 端点 |
+|------|---------|---------|
+| 抖音/TikTok | `douyin.com`、`tiktok.com` | `/api/v1/hybrid/video_data` |
+| 小红书 | `xiaohongshu.com`、`xhslink.com` | `/api/v1/xiaohongshu/web/get_note_info_v7` |
+| B站 | `bilibili.com`、`b23.tv` | `/api/v1/bilibili/web/fetch_one_video_v3` |
+
+**抖音/TikTok：**
+
 ```bash
-ENV_FILE="$HOME/.claude/skills/video-to-subtitle-summary/.env" && if [ -f "$ENV_FILE" ]; then TIKHUB_TOKEN=$(grep "TIKHUB_TOKEN" "$ENV_FILE" | cut -d'=' -f2 | tr -d '"' | tr -d "'"); else TIKHUB_TOKEN=$(grep "TIKHUB_TOKEN" ~/.zshrc ~/.bashrc 2>/dev/null | head -1 | cut -d'"' -f2); fi && curl -s -X GET "https://api.tikhub.io/api/v1/douyin/web/fetch_one_video_by_share_url?share_url={ENCODED_URL}" -H "Authorization: Bearer $TIKHUB_TOKEN" -H "Accept: application/json"
+ENV_FILE="$HOME/.claude/skills/video-to-subtitle-summary/.env" && if [ -f "$ENV_FILE" ]; then TIKHUB_TOKEN=$(grep "TIKHUB_TOKEN" "$ENV_FILE" | cut -d'=' -f2 | tr -d '"' | tr -d "'"); else TIKHUB_TOKEN=$(grep "TIKHUB_TOKEN" ~/.zshrc ~/.bashrc 2>/dev/null | head -1 | cut -d'"' -f2); fi && curl -s -X GET "https://api.tikhub.io/api/v1/hybrid/video_data?url={ENCODED_URL}&minimal=true" -H "Authorization: Bearer $TIKHUB_TOKEN" -H "Accept: application/json"
 ```
 
-**提取关键字段：**
+提取关键字段：
 
 ```bash
 jq '{
-  aweme_id: .data.aweme_detail.aweme_id,
-  desc: .data.aweme_detail.desc,
-  author: .data.aweme_detail.author.nickname,
-  video_url: .data.aweme_detail.video.play_addr.url_list[0]
+  video_id: .data.aweme_id,
+  desc: .data.desc,
+  author: .data.author.nickname,
+  video_url: .data.video.play_addr.url_list[0]
 }'
 ```
 
+**小红书：**
+
+```bash
+ENV_FILE="$HOME/.claude/skills/video-to-subtitle-summary/.env" && if [ -f "$ENV_FILE" ]; then TIKHUB_TOKEN=$(grep "TIKHUB_TOKEN" "$ENV_FILE" | cut -d'=' -f2 | tr -d '"' | tr -d "'"); else TIKHUB_TOKEN=$(grep "TIKHUB_TOKEN" ~/.zshrc ~/.bashrc 2>/dev/null | head -1 | cut -d'"' -f2); fi && curl -s -X GET "https://api.tikhub.io/api/v1/xiaohongshu/web/get_note_info_v7?share_text={ENCODED_URL}" -H "Authorization: Bearer $TIKHUB_TOKEN" -H "Accept: application/json"
+```
+
+提取关键字段：
+
+```bash
+jq '{
+  note_id: .data[0].note_list[0].note_id,
+  title: .data[0].note_list[0].title,
+  author: .data[0].user.nickname,
+  type: .data[0].note_list[0].type,
+  video_url: .data[0].note_list[0].video.consumer.origin_video_key
+}'
+```
+
+> 小红书视频下载地址格式：`https://sns-video-bd.xhscdn.com/{origin_video_key}`
+
+**B站：**
+
+```bash
+ENV_FILE="$HOME/.claude/skills/video-to-subtitle-summary/.env" && if [ -f "$ENV_FILE" ]; then TIKHUB_TOKEN=$(grep "TIKHUB_TOKEN" "$ENV_FILE" | cut -d'=' -f2 | tr -d '"' | tr -d "'"); else TIKHUB_TOKEN=$(grep "TIKHUB_TOKEN" ~/.zshrc ~/.bashrc 2>/dev/null | head -1 | cut -d'"' -f2); fi && curl -s -X GET "https://api.tikhub.io/api/v1/bilibili/web/fetch_one_video_v3?url={ENCODED_URL}" -H "Authorization: Bearer $TIKHUB_TOKEN" -H "Accept: application/json"
+```
+
+提取关键字段：
+
+```bash
+jq '{
+  bvid: .data.bvid,
+  title: .data.title,
+  author: .data.owner.name,
+  duration: .data.duration,
+  desc: .data.desc
+}'
+```
+
+> B站 API 仅返回元数据，不含直接下载地址。步骤2中使用 `yt-dlp` 下载。
+
 ### 步骤2: 下载视频（仅在线视频模式）
+
+根据平台使用不同的下载方式：
+
+**抖音/TikTok（从步骤1获取的 video_url 下载）：**
 
 ```bash
 mkdir -p /tmp/video_analysis/{VIDEO_ID}
 curl -L -o /tmp/video_analysis/{VIDEO_ID}/video.mp4 -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" "{VIDEO_URL}"
+```
+
+**小红书（拼接 CDN 地址下载）：**
+
+```bash
+mkdir -p /tmp/video_analysis/{NOTE_ID}
+curl -L -o /tmp/video_analysis/{NOTE_ID}/video.mp4 -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" "https://sns-video-bd.xhscdn.com/{ORIGIN_VIDEO_KEY}"
+```
+
+**B站（使用 yt-dlp 下载）：**
+
+> B站 TikHub API 仅返回元数据，需使用 `yt-dlp` 下载视频。安装：`brew install yt-dlp`（macOS）/ `pip install yt-dlp`
+
+```bash
+mkdir -p /tmp/video_analysis/{BVID}
+yt-dlp -o /tmp/video_analysis/{BVID}/video.mp4 "https://www.bilibili.com/video/{BVID}/"
 ```
 
 ### 步骤3: 提取音频（本地音频文件可跳过）
@@ -244,8 +318,9 @@ xxx
 | ---------------- | ------------------------------------------------------------------------------------------------- |
 | **缺少环境变量** | 在 `.env` 文件或 `~/.zshrc`/`~/.bashrc` 中配置，详见 [申请教程](./docs/)                          |
 | 环境变量未生效   | 执行 `source ~/.zshrc` 或重启终端；使用 `.env` 文件则无需此步骤                                   |
-| TikHub API 404   | 抖音端点: `/api/v1/douyin/web/fetch_one_video_by_share_url`；小红书端点: `/api/v1/xiaohongshu/web/fetch_note_info` |
+| TikHub API 404   | 抖音: `/api/v1/hybrid/video_data`；小红书: `/api/v1/xiaohongshu/web/get_note_info_v7`；B站: `/api/v1/bilibili/web/fetch_one_video_v3` |
 | 字节API认证失败  | Authorization: `Bearer;token`（分号无空格）                                                       |
-| 视频下载失败     | 添加 User-Agent header                                                                            |
+| 视频下载失败     | 抖音/小红书添加 User-Agent header；B站使用 `yt-dlp` 下载                                          |
 | FFmpeg 找不到    | macOS: `brew install ffmpeg` / Linux: `sudo apt install ffmpeg` / Windows: `choco install ffmpeg` |
+| yt-dlp 找不到    | macOS: `brew install yt-dlp` / 通用: `pip install yt-dlp`（仅B站视频需要）                        |
 | curl 命令报错    | 使用单行命令，避免多行换行                                                                        |
