@@ -12,31 +12,30 @@
 
 使用手机号或邮箱注册账号，完成实名认证。
 
-## 步骤 2：开通语音技术服务
+## 步骤 2：开通音视频字幕生成服务
 
-1. 登录控制台后，在顶部搜索栏搜索 **"语音技术"** 或 **"语音识别"**
-2. 进入 **语音技术** 产品页面
-3. 点击 **开通服务**（如未开通）
-4. 阅读并同意服务协议
+直接访问产品控制台：
 
-## 步骤 3：创建应用获取 AppID
+**https://console.volcengine.com/speech/service/9**
 
-1. 在语音技术控制台，进入 **应用管理**
-2. 点击 **创建应用**
-3. 填写应用信息：
-   - **应用名称**：任意，如 `video-subtitle`
-   - **应用描述**：可选
-4. 创建成功后，在应用列表中找到 **AppID**，复制保存
+或者在控制台中通过左侧菜单找到：**音视频字幕 → 音视频字幕生成**
 
-## 步骤 4：获取 Access Token
+1. 进入页面后，在 **服务详情** 区域找到 **"服务开通"** 列
+2. 将服务状态从 **"暂停"** 切换为 **开启**
+3. 新用户会自动获得免费时长包（20 小时）
 
-1. 在语音技术控制台，进入 **密钥管理** 或 **Token 管理**
-2. 找到或生成 **Access Token**
-3. 复制并保存 Token
+## 步骤 3：获取 APP ID 和 Access Token
 
-> 注意：不同于其他云服务使用 AccessKey/SecretKey，语音识别 API 使用独立的 Bearer Token 认证。
+在同一页面底部的 **"服务接口认证信息"** 区域（如下图黄色高亮部分），可以直接找到：
 
-## 步骤 5：配置环境变量
+- **APP ID** — 复制保存
+- **Access Token** — 点击查看并复制保存
+
+![火山引擎控制台 - 音视频字幕生成](./volcengine-console.jpeg)
+
+> 注意：不同于其他云服务使用 AccessKey/SecretKey，此 API 使用独立的 Bearer Token 认证。
+
+## 步骤 4：配置环境变量
 
 将获得的 AppID 和 Token 配置到环境变量中：
 
@@ -54,7 +53,7 @@ export BYTEDANCE_VC_APPID="your_actual_appid_here"
 source ~/.zshrc  # 使配置生效
 ```
 
-## 步骤 6：验证配置
+## 步骤 5：验证配置
 
 ```bash
 # 准备一个测试音频文件（mp3格式），然后执行：
@@ -164,8 +163,8 @@ GET https://openspeech.bytedance.com/api/v1/vc/query
 **Q: 认证失败（401/1002）？**
 A: 注意 Authorization header 格式为 `Bearer;token`（分号连接，无空格），不是常见的 `Bearer token`。
 
-**Q: AppID 在哪里找？**
-A: 控制台 → 语音技术 → 应用管理 → 应用列表中的 AppID 列。
+**Q: AppID 和 Token 在哪里找？**
+A: 直接访问 [控制台](https://console.volcengine.com/speech/service/9)，页面底部 **"服务接口认证信息"** 区域即可找到 APP ID 和 Access Token。
 
 **Q: 返回 code=2000？**
 A: 表示任务处理中，等待 5 秒后重新查询即可。
