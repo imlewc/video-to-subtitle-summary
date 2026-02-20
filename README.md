@@ -1,16 +1,16 @@
 # video-to-subtitle-summary
 
-一个 Claude Code Skill，自动将抖音视频或本地视频/音频文件转换为字幕文本并生成 AI 摘要。
+一个 Claude Code Skill，自动将短视频平台（抖音、小红书等）视频或本地视频/音频文件转换为字幕文本并生成 AI 摘要。
 
 **核心流程：**
-- **在线视频：** 提供抖音链接 → 自动下载视频 → 提取音频 → 语音识别 → 生成字幕 → AI 总结
+- **在线视频：** 提供视频链接 → 自动下载视频 → 提取音频 → 语音识别 → 生成字幕 → AI 总结
 - **本地文件：** 提供本地视频/音频路径 → 提取音频（如需） → 语音识别 → 生成字幕 → AI 总结
 
 [English](./README_en.md)
 
 ## 效果展示
 
-输入一个抖音视频链接或本地文件路径，自动输出：
+输入一个视频链接或本地文件路径，自动输出：
 
 ```markdown
 ## 视频分析结果
@@ -47,7 +47,7 @@ AI在各行业的落地应用，以及普通人如何把握AI时代的机遇...
 |------|------|
 | [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | Anthropic 官方 CLI 工具 |
 | [FFmpeg](https://ffmpeg.org/) | 音视频处理工具 |
-| [TikHub](https://tikhub.io/) 账号 | 获取抖音视频信息和下载地址（仅在线视频需要） |
+| [TikHub](https://tikhub.io/) 账号 | 获取短视频平台视频信息和下载地址（仅在线视频需要） |
 | [火山引擎](https://www.volcengine.com/) 账号 | 字节跳动语音识别服务 |
 
 ## 快速安装
@@ -99,10 +99,14 @@ export BYTEDANCE_VC_APPID="your_bytedance_vc_appid"
 
 ### 在线视频
 
-在 Claude Code 中直接发送抖音链接即可：
+在 Claude Code 中直接发送视频链接即可（支持抖音、小红书等）：
 
 ```
 请帮我提取这个视频的字幕并总结：https://v.douyin.com/xxxxxx/
+```
+
+```
+请帮我总结这个小红书视频：https://www.xiaohongshu.com/explore/xxxxxx
 ```
 
 或者使用 skill 命令：

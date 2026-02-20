@@ -1,14 +1,14 @@
 ---
 name: video-to-subtitle-summary
-description: Use when user provides a Douyin video URL or a local video/audio file path and wants to extract subtitles and generate AI summary. Triggers on Douyin URLs like v.douyin.com, share links, or local file paths ending in .mp4/.mp3/.wav etc.
-args: <douyin_url_or_file_path> - 抖音视频链接或本地视频/音频文件路径（必需）
+description: Use when user provides a short video platform URL (Douyin, Xiaohongshu, etc.) or a local video/audio file path and wants to extract subtitles and generate AI summary. Triggers on URLs like v.douyin.com, xhslink.com, xiaohongshu.com, share links, or local file paths ending in .mp4/.mp3/.wav etc.
+args: <video_url_or_file_path> - 视频链接（抖音/小红书等）或本地视频/音频文件路径（必需）
 ---
 
 # 视频转字幕与AI总结技能
 
 ## Overview
 
-将抖音视频或本地视频/音频文件转换为字幕文本并生成AI摘要。
+将短视频平台（抖音、小红书等）视频或本地视频/音频文件转换为字幕文本并生成AI摘要。
 
 **核心流程：**
 - **在线视频：** 获取视频信息 → 下载视频 → 提取音频 → 语音识别 → 生成字幕 → AI总结
@@ -16,7 +16,7 @@ args: <douyin_url_or_file_path> - 抖音视频链接或本地视频/音频文件
 
 ## When to Use
 
-- 用户提供抖音链接，要求提取字幕或生成总结
+- 用户提供短视频平台链接（抖音、小红书等），要求提取字幕或生成总结
 - 用户提供本地视频/音频文件路径，要求转字幕或生成总结
 - 需要将视频内容转为文字
 
@@ -26,7 +26,7 @@ args: <douyin_url_or_file_path> - 抖音视频链接或本地视频/音频文件
 
 | 服务                | 用途                   | 必需                           |
 | ------------------- | ---------------------- | ------------------------------ |
-| **TikHub API**      | 获取视频信息和下载地址 | 仅在线视频模式需要             |
+| **TikHub API**      | 获取短视频平台视频信息和下载地址（抖音、小红书等） | 仅在线视频模式需要             |
 | **字节跳动 VC API** | 语音转文字             | ✅                              |
 | **FFmpeg**          | 提取音频（本地工具）   | ✅（音频文件可跳过）            |
 
@@ -60,7 +60,7 @@ export BYTEDANCE_VC_APPID="your_appid"
 
 根据用户输入判断处理模式：
 
-- **在线视频模式**：输入为 URL（包含 `http`/`https`、`douyin.com`、`v.douyin.com` 等）→ 从步骤1开始，完整执行
+- **在线视频模式**：输入为 URL（包含 `http`/`https`、`douyin.com`、`v.douyin.com`、`xhslink.com`、`xiaohongshu.com` 等）→ 从步骤1开始，完整执行
 - **本地文件模式**：输入为本地文件路径（如 `/path/to/video.mp4`、`~/Downloads/audio.mp3`）→ **跳过步骤1和步骤2**，根据文件类型决定：
   - 本地**视频**文件（`.mp4`、`.mov`、`.avi`、`.mkv` 等）→ 从步骤3（提取音频）开始
   - 本地**音频**文件（`.mp3`、`.wav`、`.m4a`、`.flac` 等）→ **跳过步骤3**，直接从步骤4（语音识别）开始
@@ -244,7 +244,7 @@ xxx
 | ---------------- | ------------------------------------------------------------------------------------------------- |
 | **缺少环境变量** | 在 `.env` 文件或 `~/.zshrc`/`~/.bashrc` 中配置，详见 [申请教程](./docs/)                          |
 | 环境变量未生效   | 执行 `source ~/.zshrc` 或重启终端；使用 `.env` 文件则无需此步骤                                   |
-| TikHub API 404   | 端点: `/api/v1/douyin/web/fetch_one_video_by_share_url`                                           |
+| TikHub API 404   | 抖音端点: `/api/v1/douyin/web/fetch_one_video_by_share_url`；小红书端点: `/api/v1/xiaohongshu/web/fetch_note_info` |
 | 字节API认证失败  | Authorization: `Bearer;token`（分号无空格）                                                       |
 | 视频下载失败     | 添加 User-Agent header                                                                            |
 | FFmpeg 找不到    | macOS: `brew install ffmpeg` / Linux: `sudo apt install ffmpeg` / Windows: `choco install ffmpeg` |

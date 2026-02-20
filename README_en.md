@@ -1,16 +1,16 @@
 # video-to-subtitle-summary
 
-A Claude Code Skill that automatically converts Douyin (TikTok China) videos or local video/audio files into subtitle text and generates AI summaries.
+A Claude Code Skill that automatically converts short video platform (Douyin, Xiaohongshu, etc.) videos or local video/audio files into subtitle text and generates AI summaries.
 
 **Core Flow:**
-- **Online video:** Provide a Douyin link → Auto-download video → Extract audio → Speech recognition → Generate subtitles → AI summary
+- **Online video:** Provide a video link → Auto-download video → Extract audio → Speech recognition → Generate subtitles → AI summary
 - **Local file:** Provide a local video/audio path → Extract audio (if needed) → Speech recognition → Generate subtitles → AI summary
 
 [中文文档](./README.md)
 
 ## Demo
 
-Give it a Douyin video link or a local file path, and it automatically outputs:
+Give it a video link or a local file path, and it automatically outputs:
 
 ```markdown
 ## Video Analysis Result
@@ -48,7 +48,7 @@ and how individuals can seize opportunities in the AI era...
 |-----------|-------------|
 | [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | Anthropic's official CLI tool |
 | [FFmpeg](https://ffmpeg.org/) | Audio/video processing tool |
-| [TikHub](https://tikhub.io/) account | Fetch Douyin video info and download URLs (online video only) |
+| [TikHub](https://tikhub.io/) account | Fetch short video platform info and download URLs (online video only) |
 | [Volcengine](https://www.volcengine.com/) account | ByteDance speech recognition service |
 
 ## Quick Start
@@ -100,10 +100,14 @@ export BYTEDANCE_VC_APPID="your_bytedance_vc_appid"
 
 ### Online Video
 
-Simply send a Douyin link in Claude Code:
+Simply send a video link in Claude Code (supports Douyin, Xiaohongshu, etc.):
 
 ```
 Please extract subtitles and summarize this video: https://v.douyin.com/xxxxxx/
+```
+
+```
+Please summarize this Xiaohongshu video: https://www.xiaohongshu.com/explore/xxxxxx
 ```
 
 Or use the skill command:
