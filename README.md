@@ -8,6 +8,12 @@
 
 [English](./README_en.md)
 
+## 一键免部署方案
+
+不想本地安装和配置环境时，可直接使用在线版本：
+
+- [https://ai-douyin.top9.cc](https://ai-douyin.top9.cc)
+
 ## 效果展示
 
 输入一个视频链接或本地文件路径，自动输出：
