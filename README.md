@@ -78,7 +78,7 @@ AI 在各行业的落地应用，以及普通人如何把握 AI 时代的机遇.
 | [FFmpeg](https://ffmpeg.org/) | 音视频处理工具 |
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 视频下载和 YouTube 字幕抓取工具（B 站 / YouTube 需要） |
 | [AI Douyin](https://ai-douyin.top9.cc) API Key | 推荐的视频解析/下载代理；新用户免费额度，可避免单独注册 TikHub |
-| [TikHub](https://tikhub.io/) 账号 | 可选高级方案：自带 Token 直接解析抖音/小红书/B 站 |
+| [TikHub](https://tikhub.io/) 账号 | 可选视频接口获取方案：自带 Token 直接解析抖音/小红书/B 站 |
 | Python 3.9+ + [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | 当 `ASR_BACKEND=faster-whisper` 时需要 |
 | [火山引擎](https://www.volcengine.com/) 账号 | 当 `ASR_BACKEND=volcengine` 时需要 |
 
@@ -167,7 +167,7 @@ export VIDEO_INFO_PROVIDER="ai-douyin"
 export AI_DOUYIN_API_BASE="https://ai-douyin.top9.cc"
 export AI_DOUYIN_API_KEY="your_ai_douyin_api_key"
 
-# 可选高级方案：自有 TikHub Token
+# 可选视频接口获取方案：自有 TikHub Token
 export TIKHUB_TOKEN=""
 
 export FW_MODEL_SIZE="small"
@@ -182,7 +182,7 @@ export BYTEDANCE_VC_APPID="your_bytedance_vc_appid"
 - `ASR_BACKEND`：可选，默认 `faster-whisper`
 - `VIDEO_INFO_PROVIDER`：可选，默认 `ai-douyin`；可改为 `tikhub`
 - `AI_DOUYIN_API_BASE` / `AI_DOUYIN_API_KEY`：默认推荐的视频解析代理；抖音/小红书/B 站需要；YouTube 不需要；成功解析下载直链后扣 1 积分
-- `TIKHUB_TOKEN`：可选高级方案；当 `VIDEO_INFO_PROVIDER=tikhub` 或 AI Douyin 不可用时使用
+- `TIKHUB_TOKEN`：可选视频接口获取方案；当 `VIDEO_INFO_PROVIDER=tikhub` 或 AI Douyin 不可用时使用
 - AI Douyin 返回 `402 insufficient balance` 时，表示免费额度用完或余额不足，可在平台充值积分，或切换为自有 TikHub Token
 - `FW_MODEL_SIZE` / `FW_DEVICE` / `FW_COMPUTE_TYPE`：仅 `faster-whisper` 使用
 - `BYTEDANCE_VC_TOKEN` / `BYTEDANCE_VC_APPID`：仅 `volcengine` 使用
@@ -247,7 +247,7 @@ python3 ~/.claude/skills/video-to-subtitle-summary/scripts/download_youtube_subt
 | 项目 | 文档 |
 |------|------|
 | AI Douyin 代理 | [配置指南](./docs/ai-douyin-setup.md) |
-| TikHub API（可选高级方案） | [申请教程](./docs/tikhub-setup.md) |
+| TikHub API（可选视频接口获取方案） | [申请教程](./docs/tikhub-setup.md) |
 | faster-whisper 运行时 | [安装指南](./docs/faster-whisper-setup.md) |
 | 火山引擎 VC | [开通教程](./docs/bytedance-vc-setup.md) |
 

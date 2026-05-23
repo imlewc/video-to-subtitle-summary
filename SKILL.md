@@ -277,7 +277,7 @@ DOWNLOAD_COST=$(jq -r '.cost // 1' /tmp/video_analysis/download_url.json)
 jq '{download_url, extracted_url, cost}' /tmp/video_analysis/download_url.json
 ```
 
-#### 可选高级方案：自有 TikHub Token
+#### 可选视频接口获取方案：自有 TikHub Token
 
 当 `VIDEO_INFO_PROVIDER=tikhub` 时，使用自己的 TikHub Token 直接解析。注意不要把真实 Token 写入日志或回复。
 
