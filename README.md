@@ -103,10 +103,10 @@ ASR_BACKEND=volcengine
 **方案 A：faster-whisper（默认）**
 
 ```bash
-python3 -m pip install -U faster-whisper
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/install_faster_whisper.py
 ```
 
-> 默认按 CPU 路径运行。检测到 NVIDIA/CUDA 时会自动切到 GPU。Apple Silicon 会继续走 CPU 路径。GPU 安装细节见 [docs/faster-whisper-setup.md](./docs/faster-whisper-setup.md)。
+> 安装 helper 会先测速 PyPI 镜像，选择最快可用源，再创建独立 venv 安装。默认按 CPU 路径运行；检测到 NVIDIA/CUDA 时会自动切到 GPU。Apple Silicon 会继续走 CPU 路径。GPU 安装细节见 [docs/faster-whisper-setup.md](./docs/faster-whisper-setup.md)。
 
 **方案 B：火山引擎 VC（可选）**
 
@@ -178,6 +178,7 @@ export TIKHUB_TOKEN=""
 export FW_MODEL_SIZE="small"
 export FW_DEVICE="auto"
 export FW_COMPUTE_TYPE=""
+export FW_PYTHON=""
 
 export BYTEDANCE_VC_TOKEN="your_bytedance_vc_token"
 export BYTEDANCE_VC_APPID="your_bytedance_vc_appid"
@@ -190,6 +191,7 @@ export BYTEDANCE_VC_APPID="your_bytedance_vc_appid"
 - `TIKHUB_TOKEN`：可选视频接口获取方案；当 `VIDEO_INFO_PROVIDER=tikhub` 或 AI Douyin 不可用时使用
 - AI Douyin 返回 `402 insufficient balance` 时，表示免费额度用完或余额不足，可在平台充值积分，或切换为自有 TikHub Token
 - `FW_MODEL_SIZE` / `FW_DEVICE` / `FW_COMPUTE_TYPE`：仅 `faster-whisper` 使用
+- `FW_PYTHON`：可选，指定安装了 `faster-whisper` 的 Python；留空时优先使用安装 helper 创建的默认 venv
 - `BYTEDANCE_VC_TOKEN` / `BYTEDANCE_VC_APPID`：仅 `volcengine` 使用
 
 ## 使用方法

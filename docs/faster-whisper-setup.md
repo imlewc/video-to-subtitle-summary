@@ -28,11 +28,32 @@ python3 --version
 
 ## 步骤 3：安装 faster-whisper
 
+推荐使用安装 helper。它会先测速常见 PyPI 镜像，选择最快可用源，然后创建独立 venv 安装，避免污染系统 Python：
+
 ```bash
-python3 -m pip install -U faster-whisper
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/install_faster_whisper.py
 ```
 
-这会同时安装 `ctranslate2` 等依赖。
+默认 venv 路径：
+
+```text
+~/.cache/video-to-subtitle-summary/faster-whisper-venv
+```
+
+如需指定 venv 路径：
+
+```bash
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/install_faster_whisper.py \
+  --venv-dir /tmp/video_analysis/faster_whisper_venv
+```
+
+使用自定义 venv 时，在 `.env` 或 shell 环境中指定：
+
+```bash
+FW_PYTHON=/tmp/video_analysis/faster_whisper_venv/bin/python
+```
+
+这会同时安装 `ctranslate2` 等依赖。如果你明确要装进当前 Python 环境，也可以手动执行 `python3 -m pip install -U faster-whisper`。
 
 ## 步骤 4：按需安装 FFmpeg 和 yt-dlp
 
@@ -77,7 +98,7 @@ FW_COMPUTE_TYPE=
 ## 步骤 6：验证安装
 
 ```bash
-python3 - <<'PY'
+~/.cache/video-to-subtitle-summary/faster-whisper-venv/bin/python - <<'PY'
 import ctranslate2
 import faster_whisper
 
@@ -109,7 +130,7 @@ PY
 ## 常见问题
 
 **Q: `ModuleNotFoundError: No module named 'faster_whisper'`？**  
-A: 执行 `python3 -m pip install -U faster-whisper`。
+A: 执行 `python3 ~/.codex/skills/video-to-subtitle-summary/scripts/install_faster_whisper.py`。如果你用的是自定义 venv，运行转写时也要使用该 venv 的 Python。
 
 **Q: Apple Silicon 为什么没有走 GPU？**  
 A: 当前方案只把 NVIDIA/CUDA 视为可用 GPU 路径。Apple GPU 会回退到 CPU。

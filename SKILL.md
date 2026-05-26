@@ -54,6 +54,7 @@ TIKHUB_TOKEN=""
 FW_MODEL_SIZE="small"
 FW_DEVICE="auto"
 FW_COMPUTE_TYPE=""
+FW_PYTHON=""
 
 BYTEDANCE_VC_TOKEN="your_token"
 BYTEDANCE_VC_APPID="your_appid"
@@ -71,6 +72,7 @@ export TIKHUB_TOKEN=""
 export FW_MODEL_SIZE="small"
 export FW_DEVICE="auto"
 export FW_COMPUTE_TYPE=""
+export FW_PYTHON=""
 
 export BYTEDANCE_VC_TOKEN="your_token"
 export BYTEDANCE_VC_APPID="your_appid"
@@ -82,6 +84,7 @@ export BYTEDANCE_VC_APPID="your_appid"
 - `AI_DOUYIN_API_BASE` / `AI_DOUYIN_API_KEY`：推荐的视频解析代理；抖音/小红书/B 站需要；YouTube 不需要
 - `TIKHUB_TOKEN`：可选高级/自托管方案；当 `VIDEO_INFO_PROVIDER=tikhub` 时需要
 - `FW_MODEL_SIZE` / `FW_DEVICE` / `FW_COMPUTE_TYPE`：仅 `faster-whisper` 后端使用
+- `FW_PYTHON`：可选，指定安装了 `faster-whisper` 的 Python；留空时优先使用安装 helper 创建的默认 venv，再回退系统 `python3`
 - `BYTEDANCE_VC_TOKEN` / `BYTEDANCE_VC_APPID`：仅 `volcengine` 后端使用
 
 > 安装与运行时说明见 [AI Douyin 配置指南](./docs/ai-douyin-setup.md)、[TikHub 申请指南](./docs/tikhub-setup.md)、[faster-whisper 安装指南](./docs/faster-whisper-setup.md) 和 [火山引擎开通指南](./docs/bytedance-vc-setup.md)
@@ -157,6 +160,9 @@ AI_DOUYIN_API_KEY="$(read_env AI_DOUYIN_API_KEY)"
 TIKHUB_TOKEN="$(read_env TIKHUB_TOKEN)"
 BYTEDANCE_VC_TOKEN="$(read_env BYTEDANCE_VC_TOKEN)"
 BYTEDANCE_VC_APPID="$(read_env BYTEDANCE_VC_APPID)"
+FW_PYTHON="$(read_env FW_PYTHON)"
+[ -z "$FW_PYTHON" ] && [ -x "$HOME/.cache/video-to-subtitle-summary/faster-whisper-venv/bin/python" ] && FW_PYTHON="$HOME/.cache/video-to-subtitle-summary/faster-whisper-venv/bin/python"
+[ -z "$FW_PYTHON" ] && FW_PYTHON="python3"
 
 MISSING=""
 
@@ -183,8 +189,8 @@ if [ "{NEEDS_FFMPEG}" = "yes" ] && [ "{PLATFORM}" != "youtube" ]; then
 fi
 
 if [ "$ASR_BACKEND" = "faster-whisper" ]; then
-  command -v python3 >/dev/null 2>&1 || MISSING="$MISSING python3"
-  python3 - <<'PY' >/dev/null 2>&1 || MISSING="$MISSING faster-whisper"
+  command -v "$FW_PYTHON" >/dev/null 2>&1 || [ -x "$FW_PYTHON" ] || MISSING="$MISSING FW_PYTHON"
+  "$FW_PYTHON" - <<'PY' >/dev/null 2>&1 || MISSING="$MISSING faster-whisper"
 import faster_whisper
 import ctranslate2
 PY
@@ -207,7 +213,7 @@ fi
 ```
 
 如果检查失败：
-- `ASR_BACKEND=faster-whisper`：参考 [docs/faster-whisper-setup.md](./docs/faster-whisper-setup.md)
+- `ASR_BACKEND=faster-whisper`：优先运行 `python3 "$SKILL_DIR/scripts/install_faster_whisper.py"`，或参考 [docs/faster-whisper-setup.md](./docs/faster-whisper-setup.md)
 - `ASR_BACKEND=volcengine`：参考 [docs/bytedance-vc-setup.md](./docs/bytedance-vc-setup.md)
 - `AI_DOUYIN_API_KEY`：注册 [AI Douyin](https://ai-douyin.top9.cc) 领取免费额度并创建 API Key；余额不足时充值积分，或改用 `VIDEO_INFO_PROVIDER=tikhub` + `TIKHUB_TOKEN`
 
@@ -386,7 +392,9 @@ $SKILL_DIR/scripts/transcribe_faster_whisper.py
 ```bash
 SKILL_DIR="${SKILL_DIR:-$HOME/.codex/skills/video-to-subtitle-summary}"
 [ -d "$SKILL_DIR" ] || SKILL_DIR="$HOME/.claude/skills/video-to-subtitle-summary"
-python3 "$SKILL_DIR/scripts/transcribe_faster_whisper.py" \
+FW_PYTHON="${FW_PYTHON:-$HOME/.cache/video-to-subtitle-summary/faster-whisper-venv/bin/python}"
+[ -x "$FW_PYTHON" ] || FW_PYTHON="python3"
+"$FW_PYTHON" "$SKILL_DIR/scripts/transcribe_faster_whisper.py" \
   /tmp/video_analysis/{VIDEO_ID}/audio.mp3 \
   --output-dir /tmp/video_analysis/{VIDEO_ID}
 ```
@@ -542,7 +550,7 @@ xxx
 | --- | --- |
 | **缺少环境变量** | 先确认 `ASR_BACKEND`；抖音/小红书/B站默认需要 `AI_DOUYIN_API_KEY`，自有 TikHub 模式需要 `TIKHUB_TOKEN`；火山后端需要 `BYTEDANCE_VC_TOKEN` 和 `BYTEDANCE_VC_APPID` |
 | `ASR_BACKEND` 无效 | 只支持 `faster-whisper` 和 `volcengine` |
-| `faster-whisper` 导入失败 | 执行 `python3 -m pip install -U faster-whisper` |
+| `faster-whisper` 导入失败 | 执行 `python3 "$SKILL_DIR/scripts/install_faster_whisper.py"`，安装 helper 会先测速 PyPI 镜像并创建独立 venv；自定义 venv 时设置 `FW_PYTHON=/path/to/venv/bin/python` |
 | 火山 API 认证失败 | Authorization 必须是 `Bearer;token`（分号无空格） |
 | 首次运行较慢 | `faster-whisper` 首次会下载模型，等待下载完成后重试 |
 | CUDA 环境不可用 | `FW_DEVICE=auto` 会自动回退到 CPU；只有 NVIDIA/CUDA 才走 GPU |
