@@ -40,10 +40,13 @@ curl -sS -X POST "https://ai-douyin.top9.cc/api/v1/video/download-url" \
 ```json
 {
   "download_url": "https://...",
+  "download_urls": ["https://...", "https://..."],
   "extracted_url": "https://v.douyin.com/xxxxxx/",
   "cost": 1
 }
 ```
+
+`download_url` 是首选下载地址；`download_urls` 是去重后的候选列表。下载首选地址失败或速度异常时，Skill 会按候选列表自动重试。
 
 ## 故障处理
 

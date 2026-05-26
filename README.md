@@ -135,13 +135,18 @@ brew install yt-dlp
 python3 -m pip install -U yt-dlp
 ```
 
-### 3. 复制 Skill 到 Claude Code
+### 3. 复制 Skill 到 Codex / Claude Code
 
 ```bash
 # 克隆仓库
-git clone https://github.com/imlewc/video-to-subtitle-summary.git
+git clone https://github.com/imlewc/video-to-subtitle-summary-skill.git video-to-subtitle-summary
 
-# 复制到 Claude Code skills 目录
+# Codex
+mkdir -p ~/.codex/skills
+cp -r video-to-subtitle-summary ~/.codex/skills/video-to-subtitle-summary
+
+# Claude Code
+mkdir -p ~/.claude/skills
 cp -r video-to-subtitle-summary ~/.claude/skills/video-to-subtitle-summary
 ```
 
@@ -152,7 +157,7 @@ cp -r video-to-subtitle-summary ~/.claude/skills/video-to-subtitle-summary
 **方式一：使用 .env 文件（推荐）**
 
 ```bash
-cp .env.example ~/.claude/skills/video-to-subtitle-summary/.env
+cp .env.example ~/.codex/skills/video-to-subtitle-summary/.env
 # 编辑 .env 文件填入你的配置
 ```
 
@@ -234,7 +239,7 @@ export BYTEDANCE_VC_APPID="your_bytedance_vc_appid"
 YouTube 链接优先执行：
 
 ```bash
-python3 ~/.claude/skills/video-to-subtitle-summary/scripts/download_youtube_subtitles.py \
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/download_youtube_subtitles.py \
   "https://www.youtube.com/watch?v=O87FdYIPeQk" \
   --output-dir /tmp/video_analysis/O87FdYIPeQk \
   --languages zh-Hans,zh-Hant,zh,en

@@ -106,7 +106,9 @@ export BYTEDANCE_VC_APPID="your_appid"
 先读取 `ASR_BACKEND`，未配置时默认使用 `faster-whisper`：
 
 ```bash
-ENV_FILE="$HOME/.claude/skills/video-to-subtitle-summary/.env"
+SKILL_DIR="${SKILL_DIR:-$HOME/.codex/skills/video-to-subtitle-summary}"
+[ -d "$SKILL_DIR" ] || SKILL_DIR="$HOME/.claude/skills/video-to-subtitle-summary"
+ENV_FILE="$SKILL_DIR/.env"
 
 read_env() {
   local key="$1"
@@ -132,7 +134,9 @@ echo "ASR_BACKEND=$ASR_BACKEND"
 在开始任何处理之前，先检查当前模式和当前字幕后端需要的依赖。
 
 ```bash
-ENV_FILE="$HOME/.claude/skills/video-to-subtitle-summary/.env"
+SKILL_DIR="${SKILL_DIR:-$HOME/.codex/skills/video-to-subtitle-summary}"
+[ -d "$SKILL_DIR" ] || SKILL_DIR="$HOME/.claude/skills/video-to-subtitle-summary"
+ENV_FILE="$SKILL_DIR/.env"
 
 read_env() {
   local key="$1"
@@ -223,7 +227,9 @@ fi
 AI Douyin 适合不想单独注册 TikHub 的用户。注册 [https://ai-douyin.top9.cc](https://ai-douyin.top9.cc) 后领取免费额度并创建 API Key，成功解析下载直链后扣 1 积分；失败不扣。余额不足时接口返回 HTTP `402` / `insufficient balance`。
 
 ```bash
-ENV_FILE="$HOME/.claude/skills/video-to-subtitle-summary/.env"
+SKILL_DIR="${SKILL_DIR:-$HOME/.codex/skills/video-to-subtitle-summary}"
+[ -d "$SKILL_DIR" ] || SKILL_DIR="$HOME/.claude/skills/video-to-subtitle-summary"
+ENV_FILE="$SKILL_DIR/.env"
 read_env() {
   local key="$1"
   if [ -f "$ENV_FILE" ]; then
@@ -266,6 +272,7 @@ elif [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
 fi
 
 VIDEO_URL=$(jq -r '.download_url // empty' /tmp/video_analysis/download_url.json)
+VIDEO_URL_COUNT=$(jq -r '(.download_urls // [.download_url] | map(select(. != null and . != "")) | length)' /tmp/video_analysis/download_url.json)
 EXTRACTED_URL=$(jq -r '.extracted_url // empty' /tmp/video_analysis/download_url.json)
 DOWNLOAD_COST=$(jq -r '.cost // 1' /tmp/video_analysis/download_url.json)
 [ -z "$VIDEO_URL" ] && echo "ERROR: 未返回 download_url" && cat /tmp/video_analysis/download_url.json && exit 1
@@ -274,7 +281,7 @@ DOWNLOAD_COST=$(jq -r '.cost // 1' /tmp/video_analysis/download_url.json)
 提取关键字段：
 
 ```bash
-jq '{download_url, extracted_url, cost}' /tmp/video_analysis/download_url.json
+jq '{download_url, download_urls_count: (.download_urls // [] | length), extracted_url, cost}' /tmp/video_analysis/download_url.json
 ```
 
 #### 可选视频接口获取方案：自有 TikHub Token
@@ -321,7 +328,9 @@ curl -s -X GET "https://api.tikhub.io/api/v1/bilibili/web/fetch_one_video_v3?url
 
 ```bash
 mkdir -p /tmp/video_analysis/{VIDEO_ID}
-python3 "$HOME/.claude/skills/video-to-subtitle-summary/scripts/download_youtube_subtitles.py" \
+SKILL_DIR="${SKILL_DIR:-$HOME/.codex/skills/video-to-subtitle-summary}"
+[ -d "$SKILL_DIR" ] || SKILL_DIR="$HOME/.claude/skills/video-to-subtitle-summary"
+python3 "$SKILL_DIR/scripts/download_youtube_subtitles.py" \
   "https://www.youtube.com/watch?v={VIDEO_ID}" \
   --output-dir /tmp/video_analysis/{VIDEO_ID} \
   --languages zh-Hans,zh-Hant,zh,en
@@ -337,9 +346,12 @@ python3 "$HOME/.claude/skills/video-to-subtitle-summary/scripts/download_youtube
 
 ```bash
 mkdir -p /tmp/video_analysis/{VIDEO_ID}
-curl -L -o /tmp/video_analysis/{VIDEO_ID}/video.mp4 \
-  -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" \
-  "$VIDEO_URL"
+SKILL_DIR="${SKILL_DIR:-$HOME/.codex/skills/video-to-subtitle-summary}"
+[ -d "$SKILL_DIR" ] || SKILL_DIR="$HOME/.claude/skills/video-to-subtitle-summary"
+python3 "$SKILL_DIR/scripts/download_video_candidates.py" \
+  --response-json /tmp/video_analysis/download_url.json \
+  --output /tmp/video_analysis/{VIDEO_ID}/video.mp4 \
+  --timeout 30
 ```
 
 **B 站（没有下载直链时回退）：**
@@ -366,13 +378,15 @@ ffmpeg -i /tmp/video_analysis/{VIDEO_ID}/video.mp4 -q:a 0 -map a -y /tmp/video_a
 helper 路径：
 
 ```bash
-$HOME/.claude/skills/video-to-subtitle-summary/scripts/transcribe_faster_whisper.py
+$SKILL_DIR/scripts/transcribe_faster_whisper.py
 ```
 
 执行命令：
 
 ```bash
-python3 "$HOME/.claude/skills/video-to-subtitle-summary/scripts/transcribe_faster_whisper.py" \
+SKILL_DIR="${SKILL_DIR:-$HOME/.codex/skills/video-to-subtitle-summary}"
+[ -d "$SKILL_DIR" ] || SKILL_DIR="$HOME/.claude/skills/video-to-subtitle-summary"
+python3 "$SKILL_DIR/scripts/transcribe_faster_whisper.py" \
   /tmp/video_analysis/{VIDEO_ID}/audio.mp3 \
   --output-dir /tmp/video_analysis/{VIDEO_ID}
 ```
@@ -389,7 +403,9 @@ python3 "$HOME/.claude/skills/video-to-subtitle-summary/scripts/transcribe_faste
 提交任务：
 
 ```bash
-ENV_FILE="$HOME/.claude/skills/video-to-subtitle-summary/.env"
+SKILL_DIR="${SKILL_DIR:-$HOME/.codex/skills/video-to-subtitle-summary}"
+[ -d "$SKILL_DIR" ] || SKILL_DIR="$HOME/.claude/skills/video-to-subtitle-summary"
+ENV_FILE="$SKILL_DIR/.env"
 if [ -f "$ENV_FILE" ]; then
   BYTEDANCE_VC_TOKEN=$(grep "^BYTEDANCE_VC_TOKEN=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '"' | tr -d "'")
   BYTEDANCE_VC_APPID=$(grep "^BYTEDANCE_VC_APPID=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '"' | tr -d "'")
@@ -407,7 +423,9 @@ curl -s -X POST "https://openspeech.bytedance.com/api/v1/vc/submit?appid=$BYTEDA
 轮询结果：
 
 ```bash
-ENV_FILE="$HOME/.claude/skills/video-to-subtitle-summary/.env"
+SKILL_DIR="${SKILL_DIR:-$HOME/.codex/skills/video-to-subtitle-summary}"
+[ -d "$SKILL_DIR" ] || SKILL_DIR="$HOME/.claude/skills/video-to-subtitle-summary"
+ENV_FILE="$SKILL_DIR/.env"
 if [ -f "$ENV_FILE" ]; then
   BYTEDANCE_VC_TOKEN=$(grep "^BYTEDANCE_VC_TOKEN=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '"' | tr -d "'")
   BYTEDANCE_VC_APPID=$(grep "^BYTEDANCE_VC_APPID=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '"' | tr -d "'")
