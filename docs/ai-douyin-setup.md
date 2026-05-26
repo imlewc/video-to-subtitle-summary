@@ -48,6 +48,18 @@ curl -sS -X POST "https://ai-douyin.top9.cc/api/v1/video/download-url" \
 
 `download_url` 是首选下载地址；`download_urls` 是去重后的候选列表。下载首选地址失败或速度异常时，Skill 会按候选列表自动重试。
 
+## 查询自己的历史任务
+
+如果需要查看当前 API Key 对应用户的历史 task，可使用 skill 自带脚本：
+
+```bash
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/list_ai_douyin_tasks.py \
+  --page 1 \
+  --page-size 20
+```
+
+脚本默认读取 skill 目录 `.env` 或环境变量里的 `AI_DOUYIN_API_BASE` / `AI_DOUYIN_API_KEY`，调用 `GET /api/v1/tasks`，使用 `X-API-Key` 认证。可加 `--status completed`、`--search "关键词"` 或 `--json`。
+
 ## 故障处理
 
 - `401`：API Key 缺失或无效。重新复制后台创建的 `sk_...` Key。

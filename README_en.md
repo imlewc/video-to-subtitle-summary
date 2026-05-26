@@ -237,6 +237,25 @@ python3 ~/.codex/skills/video-to-subtitle-summary/scripts/download_youtube_subti
 
 This generates `/tmp/video_analysis/O87FdYIPeQk/subtitle.srt` and `/tmp/video_analysis/O87FdYIPeQk/text.txt`. If no subtitles are available, fall back to downloading audio and transcribing through `ASR_BACKEND`.
 
+### List Your AI Douyin Task History
+
+After `AI_DOUYIN_API_KEY` is configured, you can list historical tasks for the current API Key's user:
+
+```bash
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/list_ai_douyin_tasks.py \
+  --page 1 \
+  --page-size 20
+```
+
+Optional filters:
+
+```bash
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/list_ai_douyin_tasks.py --status completed
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/list_ai_douyin_tasks.py --search "keyword" --json
+```
+
+The script reads `AI_DOUYIN_API_BASE` / `AI_DOUYIN_API_KEY` from the skill `.env` file or environment variables, calls `GET /api/v1/tasks`, and returns only the authenticated user's own tasks.
+
 ## Setup Guides
 
 | Topic | Guide |
@@ -273,11 +292,13 @@ video-to-subtitle-summary/
 │   ├── download_video_candidates.py
 │   ├── download_youtube_subtitles.py
 │   ├── install_faster_whisper.py
+│   ├── list_ai_douyin_tasks.py
 │   └── transcribe_faster_whisper.py
 ├── tests/
 │   ├── test_download_video_candidates.py
 │   ├── test_download_youtube_subtitles.py
 │   ├── test_install_faster_whisper.py
+│   ├── test_list_ai_douyin_tasks.py
 │   └── test_transcribe_faster_whisper.py
 └── docs/
     ├── ai-douyin-setup.md

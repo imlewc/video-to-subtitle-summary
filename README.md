@@ -249,6 +249,25 @@ python3 ~/.codex/skills/video-to-subtitle-summary/scripts/download_youtube_subti
 
 生成 `/tmp/video_analysis/O87FdYIPeQk/subtitle.srt` 和 `/tmp/video_analysis/O87FdYIPeQk/text.txt`。如果视频没有可抓取字幕，再回退到下载音频并使用 `ASR_BACKEND` 转写。
 
+### 查看自己的 AI Douyin 历史任务
+
+已配置 `AI_DOUYIN_API_KEY` 后，可以查询当前 API Key 对应用户的历史任务：
+
+```bash
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/list_ai_douyin_tasks.py \
+  --page 1 \
+  --page-size 20
+```
+
+可选筛选：
+
+```bash
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/list_ai_douyin_tasks.py --status completed
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/list_ai_douyin_tasks.py --search "关键词" --json
+```
+
+该脚本默认读取 skill 目录 `.env` 或环境变量中的 `AI_DOUYIN_API_BASE` / `AI_DOUYIN_API_KEY`，调用 `GET /api/v1/tasks`，只返回当前用户自己的任务。
+
 ## 安装指南
 
 | 项目 | 文档 |
@@ -285,11 +304,13 @@ video-to-subtitle-summary/
 │   ├── download_video_candidates.py
 │   ├── download_youtube_subtitles.py
 │   ├── install_faster_whisper.py
+│   ├── list_ai_douyin_tasks.py
 │   └── transcribe_faster_whisper.py
 ├── tests/
 │   ├── test_download_video_candidates.py
 │   ├── test_download_youtube_subtitles.py
 │   ├── test_install_faster_whisper.py
+│   ├── test_list_ai_douyin_tasks.py
 │   └── test_transcribe_faster_whisper.py
 └── docs/
     ├── ai-douyin-setup.md
