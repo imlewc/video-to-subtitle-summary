@@ -1,13 +1,13 @@
 # video-to-subtitle-summary
 
-A Claude Code Skill that automatically converts short video platform (Douyin, Xiaohongshu, Bilibili, YouTube, etc.) videos or local video/audio files into subtitle text and generates AI summaries.
+A Codex / Claude Code Skill that automatically converts short video platform (Douyin, Xiaohongshu, Bilibili, YouTube, etc.) videos or local video/audio files into subtitle text and generates AI summaries.
 
 **Core Flow:**
 - **Online video:** Provide a video link → Auto-download video or fetch native subtitles → Generate subtitles → AI summary
 - **Local file:** Provide a local video/audio path → Extract audio (if needed) → Choose subtitle backend → Generate subtitles → AI summary
 
 The default subtitle backend is local `faster-whisper`, with optional support for Volcengine VC through environment variables.
-YouTube links first use `yt-dlp` to fetch manual or automatic subtitles directly, without TikHub, video download, or ASR by default.
+YouTube links first use `yt-dlp` to fetch manual or automatic subtitles directly, without AI Douyin/TikHub, video download, or ASR by default.
 
 [中文文档](./README.md)
 
@@ -23,7 +23,7 @@ That means:
 - If you want local/private processing and no subtitle API fees, keep the default
 - If you prefer the cloud backend, switch the environment variable
 
-> Douyin, Xiaohongshu, and Bilibili still require TikHub for metadata and download URLs. YouTube subtitles are fetched directly with `yt-dlp`. The transcription backend itself is controlled by `ASR_BACKEND`.
+> Douyin, Xiaohongshu, and Bilibili use [AI Douyin](https://ai-douyin.top9.cc) by default to resolve download URLs. New users can try the free quota; each successful download URL resolution costs 1 credit. Existing TikHub users can switch to their own `TIKHUB_TOKEN`. YouTube subtitles are fetched directly with `yt-dlp`. The transcription backend itself is controlled by `ASR_BACKEND`.
 
 ## Demo
 
@@ -63,10 +63,11 @@ and how individuals can seize opportunities in the AI era...
 
 | Dependency | Description |
 |-----------|-------------|
-| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | Anthropic's official CLI tool |
+| Codex or [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | Agent environment with local Skill support |
 | [FFmpeg](https://ffmpeg.org/) | Audio/video processing tool |
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | Video download and YouTube subtitle tool (Bilibili / YouTube) |
-| [TikHub](https://tikhub.io/) account | Fetch Douyin/Xiaohongshu/Bilibili metadata and download URLs |
+| [AI Douyin](https://ai-douyin.top9.cc) API Key | Recommended video parsing/download proxy; free trial quota for new users |
+| [TikHub](https://tikhub.io/) account | Optional video API provider if you want to use your own TikHub token |
 | Python 3.9+ + [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | Required when `ASR_BACKEND=faster-whisper` |
 | [Volcengine](https://www.volcengine.com/) account | Required when `ASR_BACKEND=volcengine` |
 
@@ -91,10 +92,10 @@ ASR_BACKEND=volcengine
 **Option A: faster-whisper (default)**
 
 ```bash
-python3 -m pip install -U faster-whisper
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/install_faster_whisper.py
 ```
 
-> The default path is CPU. The helper switches to GPU only when NVIDIA/CUDA is available. Apple Silicon still runs on CPU. See [docs/faster-whisper-setup.md](./docs/faster-whisper-setup.md) for GPU notes.
+> The install helper probes PyPI mirrors, chooses the fastest available mirror, creates an isolated venv, and installs `faster-whisper`. The default path is CPU. The helper switches to GPU only when NVIDIA/CUDA is available. Apple Silicon still runs on CPU. See [docs/faster-whisper-setup.md](./docs/faster-whisper-setup.md) for GPU notes.
 
 **Option B: Volcengine VC (optional)**
 
@@ -123,24 +124,29 @@ brew install yt-dlp
 python3 -m pip install -U yt-dlp
 ```
 
-### 3. Copy the Skill to Claude Code
+### 3. Copy the Skill to Codex / Claude Code
 
 ```bash
 # Clone the repository
-git clone https://github.com/imlewc/video-to-subtitle-summary.git
+git clone https://github.com/imlewc/video-to-subtitle-summary-skill.git video-to-subtitle-summary
 
-# Copy to Claude Code skills directory
+# Codex
+mkdir -p ~/.codex/skills
+cp -r video-to-subtitle-summary ~/.codex/skills/video-to-subtitle-summary
+
+# Claude Code
+mkdir -p ~/.claude/skills
 cp -r video-to-subtitle-summary ~/.claude/skills/video-to-subtitle-summary
 ```
 
 ### 4. Configure Environment Variables
 
-Configure TikHub credentials if you need Douyin, Xiaohongshu, or Bilibili. YouTube does not require TikHub. Then set the subtitle backend you want to use.
+If you need Douyin, Xiaohongshu, or Bilibili, register [AI Douyin](https://ai-douyin.top9.cc) and create an API Key. YouTube does not require a video parsing proxy. Existing TikHub users can switch to their own TikHub token. Then set the subtitle backend you want to use.
 
 **Option 1: Using `.env` file (Recommended)**
 
 ```bash
-cp .env.example ~/.claude/skills/video-to-subtitle-summary/.env
+cp .env.example ~/.codex/skills/video-to-subtitle-summary/.env
 # Edit the .env file with your configuration
 ```
 
@@ -148,11 +154,19 @@ cp .env.example ~/.claude/skills/video-to-subtitle-summary/.env
 
 ```bash
 export ASR_BACKEND="faster-whisper"
-export TIKHUB_TOKEN="your_tikhub_api_token"
+
+# Recommended default: AI Douyin proxy
+export VIDEO_INFO_PROVIDER="ai-douyin"
+export AI_DOUYIN_API_BASE="https://ai-douyin.top9.cc"
+export AI_DOUYIN_API_KEY="your_ai_douyin_api_key"
+
+# Optional provider: your own TikHub token
+export TIKHUB_TOKEN=""
 
 export FW_MODEL_SIZE="small"
 export FW_DEVICE="auto"
 export FW_COMPUTE_TYPE=""
+export FW_PYTHON=""
 
 export BYTEDANCE_VC_TOKEN="your_bytedance_vc_token"
 export BYTEDANCE_VC_APPID="your_bytedance_vc_appid"
@@ -160,8 +174,12 @@ export BYTEDANCE_VC_APPID="your_bytedance_vc_appid"
 
 Notes:
 - `ASR_BACKEND`: optional, defaults to `faster-whisper`
-- `TIKHUB_TOKEN`: required only for Douyin/Xiaohongshu/Bilibili; not required for YouTube
+- `VIDEO_INFO_PROVIDER`: optional, defaults to `ai-douyin`; set to `tikhub` to use your own TikHub token
+- `AI_DOUYIN_API_BASE` / `AI_DOUYIN_API_KEY`: recommended video parsing proxy; required for Douyin/Xiaohongshu/Bilibili unless using TikHub; not required for YouTube
+- `TIKHUB_TOKEN`: optional provider; required when `VIDEO_INFO_PROVIDER=tikhub`
+- AI Douyin returns `402 insufficient balance` when the free quota or credits are exhausted; recharge credits or switch to your own TikHub token
 - `FW_MODEL_SIZE` / `FW_DEVICE` / `FW_COMPUTE_TYPE`: used only by `faster-whisper`
+- `FW_PYTHON`: optional Python path with `faster-whisper` installed; leave empty to use the helper-created default venv first
 - `BYTEDANCE_VC_TOKEN` / `BYTEDANCE_VC_APPID`: used only by `volcengine`
 
 ## Usage
@@ -204,14 +222,14 @@ Please extract subtitles and summarize: /Users/me/Downloads/video.mp4
 /video-to-subtitle-summary ~/Desktop/recording.mp3
 ```
 
-> Local file mode skips the download step automatically. Audio files also skip audio extraction, so TikHub is not required.
+> Local file mode skips the download step automatically. Audio files also skip audio extraction, so AI Douyin/TikHub is not required.
 
 ### Direct YouTube Subtitle Fetch
 
 YouTube links first run:
 
 ```bash
-python3 ~/.claude/skills/video-to-subtitle-summary/scripts/download_youtube_subtitles.py \
+python3 ~/.codex/skills/video-to-subtitle-summary/scripts/download_youtube_subtitles.py \
   "https://www.youtube.com/watch?v=O87FdYIPeQk" \
   --output-dir /tmp/video_analysis/O87FdYIPeQk \
   --languages zh-Hans,zh-Hant,zh,en
@@ -223,6 +241,7 @@ This generates `/tmp/video_analysis/O87FdYIPeQk/subtitle.srt` and `/tmp/video_an
 
 | Topic | Guide |
 |------|------|
+| AI Douyin proxy | [Setup Guide](./docs/ai-douyin-setup.md) |
 | TikHub API | [Setup Guide](./docs/tikhub-setup.md) |
 | faster-whisper runtime | [Setup Guide](./docs/faster-whisper-setup.md) |
 | Volcengine VC | [Setup Guide](./docs/bytedance-vc-setup.md) |
@@ -231,11 +250,12 @@ This generates `/tmp/video_analysis/O87FdYIPeQk/subtitle.srt` and `/tmp/video_an
 
 | Service | Cost |
 |--------|------|
-| TikHub API | 100 free requests/day, paid from $0.001/request |
+| AI Douyin proxy | Free quota for new users; each successful download URL resolution costs 1 credit |
+| TikHub API | Charged by your TikHub plan when using your own TikHub token |
 | YouTube subtitle fetch | No API fee, uses local `yt-dlp` |
 | faster-whisper | No API fee, uses local CPU/GPU resources |
 | Volcengine VC | Subtitle API fees apply only when `ASR_BACKEND=volcengine` |
-| Claude Code | Depends on your subscription plan |
+| Codex / Claude Code | Depends on your subscription plan |
 
 > The default `faster-whisper` path does not incur Volcengine subtitle API fees.
 > The first run downloads model files. Later runs reuse the local cache.
@@ -250,12 +270,17 @@ video-to-subtitle-summary/
 ├── SKILL.md
 ├── .env.example
 ├── scripts/
+│   ├── download_video_candidates.py
 │   ├── download_youtube_subtitles.py
+│   ├── install_faster_whisper.py
 │   └── transcribe_faster_whisper.py
 ├── tests/
+│   ├── test_download_video_candidates.py
 │   ├── test_download_youtube_subtitles.py
+│   ├── test_install_faster_whisper.py
 │   └── test_transcribe_faster_whisper.py
 └── docs/
+    ├── ai-douyin-setup.md
     ├── tikhub-setup.md
     ├── faster-whisper-setup.md
     └── bytedance-vc-setup.md

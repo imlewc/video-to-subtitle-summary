@@ -1,6 +1,6 @@
 # video-to-subtitle-summary
 
-一个 Claude Code Skill，自动将短视频平台（抖音、小红书、B 站、YouTube 等）视频或本地视频/音频文件转换为字幕文本并生成 AI 摘要。
+一个 Codex / Claude Code Skill，自动将短视频平台（抖音、小红书、B 站、YouTube 等）视频或本地视频/音频文件转换为字幕文本并生成 AI 摘要。
 
 **核心流程：**
 - **在线视频：** 提供视频链接 → 自动下载视频或直接抓字幕 → 生成字幕 → AI 总结
@@ -74,7 +74,7 @@ AI 在各行业的落地应用，以及普通人如何把握 AI 时代的机遇.
 
 | 依赖 | 说明 |
 |------|------|
-| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | Anthropic 官方 CLI 工具 |
+| Codex 或 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | 支持本地 Skill 的 Agent 环境 |
 | [FFmpeg](https://ffmpeg.org/) | 音视频处理工具 |
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 视频下载和 YouTube 字幕抓取工具（B 站 / YouTube 需要） |
 | [AI Douyin](https://ai-douyin.top9.cc) API Key | 推荐的视频解析/下载代理；新用户免费额度，可避免单独注册 TikHub |
@@ -282,10 +282,14 @@ video-to-subtitle-summary/
 ├── SKILL.md                      # Skill 本体
 ├── .env.example                  # 环境变量模板
 ├── scripts/
+│   ├── download_video_candidates.py
 │   ├── download_youtube_subtitles.py
+│   ├── install_faster_whisper.py
 │   └── transcribe_faster_whisper.py
 ├── tests/
+│   ├── test_download_video_candidates.py
 │   ├── test_download_youtube_subtitles.py
+│   ├── test_install_faster_whisper.py
 │   └── test_transcribe_faster_whisper.py
 └── docs/
     ├── ai-douyin-setup.md
